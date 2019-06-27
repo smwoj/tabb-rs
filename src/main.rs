@@ -4,7 +4,6 @@ use std::io::BufRead;
 mod config;
 mod formatter;
 
-
 fn main() {
     // parse cl args and inspect execution context (are we writing to a tty?)
     let config = config::Config::new();

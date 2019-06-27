@@ -3,7 +3,7 @@ use std::iter::repeat;
 
 pub fn analyze(
     lines: &Vec<String>,
-    sep: &String
+    sep: &str
 ) -> Vec<usize>{
     let mut columns_to_lengths: Vec<Vec<usize>> = Vec::new();
 
@@ -17,7 +17,7 @@ pub fn analyze(
         if columns_to_lengths.len() < column_value_lenghts.len() {
             columns_to_lengths
                 .resize_with(column_value_lenghts.len(), || Vec::new())
-        }  //or abort due to malformed tsv
+        }
 
         for (i, col_value_length) in column_value_lenghts.iter().enumerate() {
             columns_to_lengths[i].push(*col_value_length)
@@ -28,6 +28,9 @@ pub fn analyze(
         .map(|v| v.iter().max().unwrap().clone())
         .collect::<Vec<_>>()
 }
+
+
+
 
 
 pub fn split_available_width(
@@ -60,13 +63,14 @@ pub fn split_available_width(
 
 
 pub fn format_line(
-    _line: String,
+    input_line: String,
     split_info: &Vec<usize>,
-    input_sep: &String,
-    output_sep: &String,
+    input_sep: &str,
+    output_sep: &str,
     fill_value: char,
 )-> String {
-    let formatted_col_values = _line.trim()
+    input_line
+        .trim()
         .split(input_sep)
         .zip(split_info.iter())
         .map(|(col_value, width_to_fill)|{
@@ -77,17 +81,14 @@ pub fn format_line(
             if col_value.chars().count() <= *width_to_fill {
                 chars
                     .take(*width_to_fill)
-//                    .chain(output_sep.to_string().chars())
                     .collect::<String>()
             } else {
                 chars
                     .take(*width_to_fill-1)
                     .chain("*".chars())
-//                    .chain(output_sep.to_string().chars())
                     .collect::<String>()
             }
         })
-        .collect::<Vec<String>>();
-    formatted_col_values.join(output_sep)
-
+        .collect::<Vec<String>>()
+        .join(output_sep)
 }

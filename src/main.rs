@@ -1,36 +1,12 @@
-extern crate termion;
-extern crate atty;
-#[macro_use]
-extern crate structopt;
-
 use std::io;
 use std::io::BufRead;
 use std::iter::repeat;
 
 
-#[derive(Debug, Clone, Copy)]
-struct ExecutionContext {
-    is_stdout_tty: bool,
-    out_stream_width: Option<usize>,
-}
+mod config;
 
-impl ExecutionContext {
-    fn new() -> ExecutionContext {
-        let is_stdout_tty = atty::is(atty::Stream::Stdout);
-
-        ExecutionContext{
-            is_stdout_tty,
-            out_stream_width: match is_stdout_tty {
-                true => Some(
-                    termion::terminal_size().unwrap().0 as usize),
-                false => None,
-            }
-        }
-    }
-}
 
 const COLUMN_SEP: &str = " ";
-
 
 fn analyze(lines: &Vec<String>) -> Vec<usize>{
     let mut columns_to_lengths: Vec<Vec<usize>> = Vec::new();
@@ -101,52 +77,11 @@ fn format_line(_line: String, split_info: &Vec<usize>)-> String {
         .collect()
 }
 
-use structopt::StructOpt;
-
-#[derive(Debug, StructOpt)]
-#[structopt(name = "tab", about = "
-Formatting and padding utility for tabular data.
-
-This program:
-- reads and caches n first lines (default n=50),
-- calculates columns widths necessary for pretty printing,
-- prints cached lines and any all consecutive ones.
-
-Tab switches between two modes:
- - printer (when there's a terminal serving as stdout device),
- - formatter (otherwise - when output is e.g. piped or redirected to file).
-")]
-struct Args{
-    /// Column separator char
-    #[structopt(short = "s", long = "separator", default_value = "\t")]
-    sep: char,
-
-    /// Padding character
-    #[structopt(short = "p", long = "padding", default_value = " ")]
-    padding: char,
-
-    /// Cache n first lines to calculate columns' widths
-    #[structopt(short = "n", default_value = "50")]
-    n: i16,
-
-    // If in printer mode, take as little screen width as possible
-    // Option ignored in formatter mode.
-    #[structopt(long = "shrink")]
-    shrink: bool,
-
-    // Use fixed row width
-    // This option overrides automatically determined terminal width (if one is available).
-    #[structopt(short = "w", long = "width", default_value = "119")]
-    width: i16,
-}
-
 
 fn main() {
-    let cl_args = Args::from_args();
-    println!("{:?}", cl_args);
+    let config = config::Config::new();
+    println!("{:?}", config);
 
-    let context = ExecutionContext::new();
-    println!("Execution context: {:?}", &context);
     let stdin = io::stdin();
     let in_handle = stdin.lock(); // TODO: test perf
 //    let stdout= io::Stdout::lock(); // TODO: test perf
@@ -160,7 +95,7 @@ fn main() {
     let result = analyze(&first_lines);
     println!("Result: {:?}", result);
     let split_info = split_proportionally(
-        &result, context.out_stream_width.unwrap());
+        &result, config.width);
 
     println!("----------------------------------");
     for l in first_lines {
@@ -173,6 +108,5 @@ fn main() {
     };
 }
 
-// TODO: setup repo na githubie, release-0.0.1
 // skończenie 0.1.0
 // wypaczkowanie

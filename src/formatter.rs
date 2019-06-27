@@ -1,4 +1,5 @@
 use std::iter::repeat;
+// TODO: use rstest or write a generic macro for parameterized tests
 
 
 pub fn analyze(
@@ -29,8 +30,38 @@ pub fn analyze(
         .collect::<Vec<_>>()
 }
 
+#[cfg(test)]
+mod test_analyze {
+    use super::*;
 
+    macro_rules! test_analyze {
+    ($($test_name:ident: $value:expr,)*) => {
+    $(
+        #[test]
+        fn $test_name() {
+            let (sep, expected_results, lines) = $value;
+            assert_eq!(analyze(lines, sep), expected_results);
+        }
+    )*
+    }
+}
 
+    test_analyze! {
+        empty_input: ("\t", vec![], &vec![]),
+
+        simple_tsv: ("\t", vec![7, 10, 6], &vec![
+            vec!["sample", "tsv", "header"].join("\t"),
+            vec!["first", "tsv", "row"].join("\t"),
+            vec!["another", "tsvvvvvvvv", "row"].join("\t"),
+        ]),
+
+        simple_ssv: (" ", vec![7, 10, 6], &vec![
+            vec!["sample", "tsv", "header"].join(" "),
+            vec!["first", "tsv", "row"].join(" "),
+            vec!["another", "tsvvvvvvvv", "row"].join(" "),
+        ]),
+    }
+}
 
 
 pub fn split_available_width(
@@ -59,6 +90,38 @@ pub fn split_available_width(
     assert!(width_to_alloc >= total_cols_width as f64);
 
     available_chars_per_column
+}
+
+
+#[cfg(test)]
+mod test_split_available_width {
+    use super::*;
+
+    macro_rules! test_split_available_width {
+    ($($test_name:ident: $value:expr,)*) => {
+    $(
+        #[test]
+        fn $test_name() {
+            let (max_lengths, available_width, output_sep_len, expand, expected_results) = $value;
+            assert_eq!(
+                split_available_width(max_lengths, available_width, output_sep_len, expand),
+                expected_results);
+        }
+    )*
+    }
+}
+
+    test_split_available_width! {
+        empty_input: (
+           &vec![], 50, 5, false,
+           vec![],
+        ),
+
+        no_limiting_needed: (
+           &vec![5, 6, 7], 50, 5, false,
+           vec![5, 6, 7],
+        ),
+    }
 }
 
 
@@ -92,3 +155,4 @@ pub fn format_line(
         .collect::<Vec<String>>()
         .join(output_sep)
 }
+

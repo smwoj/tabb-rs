@@ -36,8 +36,7 @@ struct Args{
     #[structopt(short = "w", long = "width")]
     width: Option<usize>,
 
-    /// If in the printer mode, take as little screen width as possible
-    /// Option ignored in formatter mode.
+    /// Use as little screen width as possible
     #[structopt(long = "shrink")]
     shrink: bool,
 

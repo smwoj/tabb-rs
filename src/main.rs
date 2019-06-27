@@ -1,5 +1,7 @@
 extern crate termion;
 extern crate atty;
+#[macro_use]
+extern crate structopt;
 
 use std::io;
 use std::io::BufRead;
@@ -99,7 +101,50 @@ fn format_line(_line: String, split_info: &Vec<usize>)-> String {
         .collect()
 }
 
+use structopt::StructOpt;
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "tab", about = "
+Formatting and padding utility for tabular data.
+
+This program:
+- reads and caches n first lines (default n=50),
+- calculates columns widths necessary for pretty printing,
+- prints cached lines and any all consecutive ones.
+
+Tab switches between two modes:
+ - printer (when there's a terminal serving as stdout device),
+ - formatter (otherwise - when output is e.g. piped or redirected to file).
+")]
+struct Args{
+    /// Column separator char
+    #[structopt(short = "s", long = "separator", default_value = "\t")]
+    sep: char,
+
+    /// Padding character
+    #[structopt(short = "p", long = "padding", default_value = " ")]
+    padding: char,
+
+    /// Cache n first lines to calculate columns' widths
+    #[structopt(short = "n", default_value = "50")]
+    n: i16,
+
+    // If in printer mode, take as little screen width as possible
+    // Option ignored in formatter mode.
+    #[structopt(long = "shrink")]
+    shrink: bool,
+
+    // Use fixed row width
+    // This option overrides automatically determined terminal width (if one is available).
+    #[structopt(short = "w", long = "width", default_value = "119")]
+    width: i16,
+}
+
+
 fn main() {
+    let cl_args = Args::from_args();
+    println!("{:?}", cl_args);
+
     let context = ExecutionContext::new();
     println!("Execution context: {:?}", &context);
     let stdin = io::stdin();

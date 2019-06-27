@@ -6,41 +6,43 @@ mod formatter;
 
 
 fn main() {
+    // parse cl args and inspect execution context (are we writing to a tty?)
     let config = config::Config::new();
-    println!("{:?}", config);
+    dbg!(&config);
 
     // acquire std{in,out} locks
     let stdin = io::stdin();
     let stdout= io::stdout();
     let in_handle = stdin.lock();
-    let out_handle = stdout.lock();
+    let _out_handle = stdout.lock();
 
     // create iterator over stdin lines
     let mut lines_iter = io::BufReader::new(in_handle)
         .lines()
         .filter_map(|x| x.ok());
 
-    let first_lines: Vec<String> = (&mut lines_iter).take(50).collect();
-    let result = formatter::analyze(&first_lines, config.input_sep);
+    // collect and analyze first n lines
+    let first_lines: Vec<String> = (&mut lines_iter).take(config.n).collect();
+    let col_sizes = formatter::analyze(&first_lines, &config.input_sep);
 
-    println!("Analysis result: {:?}", result);
-    let split_info = formatter::split_proportionally(
-        &result, config.width,);
+    dbg!(&col_sizes, col_sizes.iter().sum::<usize>());
+    let split_info = formatter::split_available_width(
+        &col_sizes, config.width,
+        config.output_sep.chars().count(), config.expand);
+    dbg!(&split_info, split_info.iter().sum::<usize>());
 
-
-    println!("----------------------------------");
     for l in first_lines {
-        println!("first: {}", formatter::format_line(
-            l, &split_info, config.input_sep, config.output_sep));
+        println!("{}", formatter::format_line(
+            l, &split_info, &config.input_sep, &config.output_sep, config.padding));
     };
     for l in lines_iter {
-        println!("more: {}", formatter::format_line(
-            l, &split_info, config.input_sep, config.output_sep));
+        println!("{}", formatter::format_line(
+            l, &split_info, &config.input_sep, &config.output_sep, config.padding));
     };
 }
 
 // TODO
 // finish 0.1.0
-// release so it can be `cargo install`ed
+// release as `cargo install`able
 // use rustfmt
-// use clippy for linting
+// use clippy

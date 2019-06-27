@@ -15,7 +15,7 @@ Tab switches between two modes:
 struct Args{
     /// Column separator char [default: \t]
     #[structopt(short = "s", long = "input-sep")]
-    input_sep: Option<char>,
+    input_sep: Option<String>,
 
     /// Padding character [default: space]
     #[structopt(short = "p", long = "padding")]
@@ -24,21 +24,21 @@ struct Args{
     // to avoid confusing printing of '... [default:  ]'
 
     /// Output separator char
-    #[structopt(long = "output-sep", default_value = "|")]
-    output_sep: char,
+    #[structopt(long = "output-sep", default_value = " ")]
+    output_sep: String,
 
     /// Capture n first lines for calculating columns' widths
     #[structopt(short = "n", default_value = "50")]
-    n: i16,
+    n: usize,
 
     /// Use fixed row width.
     /// This option overrides automatically determined terminal width
     #[structopt(short = "w", long = "width")]
     width: Option<usize>,
 
-    /// Use as little screen width as possible
-    #[structopt(long = "shrink")]
-    shrink: bool,
+    /// Use as much screen width as possible (ignored in the formatter mode)
+    #[structopt(long = "expand")]
+    expand: bool,
 
     // TODO: add option for reading from a file
 }
@@ -48,12 +48,12 @@ struct Args{
 pub struct Config {
     pub is_stdout_tty: bool,
     pub width: usize,
-    pub n: i16,
+    pub n: usize,
 
-    pub input_sep: char,
-    pub output_sep: char,
+    pub input_sep: String,
+    pub output_sep: String,
     pub padding: char,
-    pub shrink: bool,
+    pub expand: bool,
 }
 
 
@@ -71,10 +71,10 @@ impl Config {
                 .unwrap_or(119),              // default width for formatter mode
             n: args.n,
 
-            input_sep: args.input_sep.unwrap_or('\t'),
+            input_sep: args.input_sep.unwrap_or('\t'.to_string()),
             output_sep: args.output_sep,
             padding: args.padding.unwrap_or(' '),
-            shrink: args.shrink,
+            expand: args.expand,
         }
     }
 }

@@ -8,7 +8,7 @@ This program reprints rows of tabular data based on widths necessary
 for pretting printing of n first lines (default=50). 
 
 
-Tab switches between two modes:
+tab switches between two modes:
  - printer (when there's a terminal serving as stdout device),
  - formatter (otherwise - when output is e.g. piped or redirected to file).
 ")]

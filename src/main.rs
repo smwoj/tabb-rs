@@ -1,6 +1,8 @@
 use std::io;
 use std::io::BufRead;
 
+#[macro_use]
+mod macros;
 mod config;
 mod formatter;
 

@@ -65,13 +65,15 @@ impl Config {
             is_stdout_tty,
             width: args
                 .width // specified stream width trumps all
-                .or(termion::terminal_size() // else check available tty width
-                    .ok()
-                    .map(|(width, _h)| width as usize))
+                .or_else(|| {
+                    termion::terminal_size() // else check available tty width
+                        .ok()
+                        .map(|(width, _h)| width as usize)
+                })
                 .unwrap_or(119), // default width for formatter mode
             n: args.n,
 
-            input_sep: args.input_sep.unwrap_or('\t'.to_string()),
+            input_sep: args.input_sep.unwrap_or_else(|| '\t'.to_string()),
             output_sep: args.output_sep,
             padding: args.padding.unwrap_or(' '),
             expand: args.expand,

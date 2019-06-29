@@ -1,3 +1,4 @@
+#[cfg(test)]
 macro_rules! parameterized_test {
         ($func_name:ident;
             { $( $test_name:ident : ( $( $arg:expr ),* ) => $expected_result:expr ),* }

@@ -5,9 +5,8 @@ pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
 
     for line in lines {
         let column_value_lenghts = line
-            .trim()
             .split(sep)
-            .map(|substr| substr.chars().count())
+            .map(|substr| substr.trim().chars().count())
             .collect::<Vec<usize>>();
 
         if columns_to_lengths.len() < column_value_lenghts.len() {
@@ -25,16 +24,17 @@ pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
         .collect::<Vec<_>>()
 }
 
+/// If available width can't be reasonably splitten, return error
 pub fn split_available_width(
     max_lengths: &[usize],
     available_width: usize,
     output_sep_len: usize,
     expand: bool,
+    //) -> Result<Vec<usize>, _> {
 ) -> Vec<usize> {
     let n_columns = max_lengths.len();
-    let width_to_alloc = (available_width - (n_columns - 1) * output_sep_len) as f64;
-    // FIXME attempt to subtract with overflow
-    // wojtek@lapwoj:~/repos/tab-rs$ cat input-example.txt | cargo run -- --output-sep ' |        '
+    let n_separators = if n_columns >= 1 { n_columns - 1 } else { 0 };
+    let width_to_alloc = (available_width - n_separators * output_sep_len) as f64;
 
     let max_len_sum = max_lengths.iter().sum::<usize>() as f64;
 
@@ -53,6 +53,7 @@ pub fn split_available_width(
     available_chars_per_column
 }
 
+///
 pub fn format_line(
     input_line: String,
     split_info: &[usize],
@@ -71,8 +72,12 @@ pub fn format_line(
                 chars.take(*width_to_fill).collect::<String>()
             } else {
                 chars
-                    .take(*width_to_fill - 1)
-                    .chain("*".chars())
+                    .take(if *width_to_fill >= 1 {
+                        *width_to_fill - 1
+                    } else {
+                        0
+                    })
+                    .chain(if *width_to_fill > 0 { "*" } else { "" }.chars())
                     .collect::<String>()
             }
         })
@@ -88,6 +93,10 @@ mod tests {
         analyze;
         {
             empty_input: (&vec![], "\t") => vec![] as Vec<usize>,
+
+            one_empty_string: (&vec!["".to_string()], "\t") => vec![0],
+
+            four_empty_strings: (&vec!["\t\t\t".to_string()], "\t") => vec![0, 0, 0, 0],
 
             simple_tsv: (&vec![
                 vec!["sample", "tsv", "header"].join("\t"),
@@ -109,6 +118,31 @@ mod tests {
             empty_input: (&vec![], 50, 5, false) => vec![] as Vec<usize>,
 
             no_limiting_needed: (&vec![5, 6, 7], 50, 5, false) => vec![5, 6, 7],
+        }
+    }
+
+    parameterized_test! {
+        format_line;
+        {
+            empty_line:
+            ("".to_string(), &vec![], "\t", "|", ' ') => "".to_string(),
+
+            simple_2_columns:
+            ("123\t12 ".to_string(), &vec![5, 5], "\t", "|", ' ') => "123  |12   ".to_string(),
+
+            columns_compressed:
+            ("12345689\tabcdefgh ".to_string(), &vec![4, 4], "\t", "|", ' ') => "123*|abc*".to_string(),
+
+
+            columns_supercompressed:
+            ("12345689\tabcdefgh ".to_string(), &vec![1, 0], "\t", "|", ' ') => "*|".to_string(),
+
+            doesnt_panic_with_0width_colums:
+            ("12345689\t12345 ".to_string(), &vec![0, 0], "\t", "|", ' ') => "|".to_string(),
+
+            columns_with_spare_space:
+            ("123456\tabcd".to_string(), &vec![8, 8], "\t", "|", ' ') => "123456  |abcd    ".to_string(),
+
         }
     }
 }

@@ -1,5 +1,6 @@
 use std::iter::repeat;
 
+/// Scans n first lines to collect info about longest values in each column.
 pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
     let mut columns_to_lengths: Vec<Vec<usize>> = Vec::new();
 
@@ -24,13 +25,12 @@ pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
         .collect::<Vec<_>>()
 }
 
-/// If available width can't be reasonably splitten, return error
+/// Assigns widths to columns.
 pub fn split_available_width(
     max_lengths: &[usize],
     available_width: usize,
     output_sep_len: usize,
     expand: bool,
-    //) -> Result<Vec<usize>, _> {
 ) -> Vec<usize> {
     let n_columns = max_lengths.len();
     let n_separators = if n_columns >= 1 { n_columns - 1 } else { 0 };
@@ -53,7 +53,7 @@ pub fn split_available_width(
     available_chars_per_column
 }
 
-///
+///Builds a line string using 'split info' as padding controller.
 pub fn format_line(
     input_line: String,
     split_info: &[usize],
@@ -92,11 +92,14 @@ mod tests {
     parameterized_test! {
         analyze;
         {
-            empty_input: (&vec![], "\t") => vec![] as Vec<usize>,
+            empty_input:
+            (&vec![], "\t") => vec![] as Vec<usize>,
 
-            one_empty_string: (&vec!["".to_string()], "\t") => vec![0],
+            one_empty_string:
+            (&vec!["".to_string()], "\t") => vec![0],
 
-            four_empty_strings: (&vec!["\t\t\t".to_string()], "\t") => vec![0, 0, 0, 0],
+            four_empty_strings:
+            (&vec!["\t\t\t".to_string()], "\t") => vec![0, 0, 0, 0],
 
             simple_tsv: (&vec![
                 vec!["sample", "tsv", "header"].join("\t"),
@@ -115,9 +118,11 @@ mod tests {
     parameterized_test! {
         split_available_width;
         {
-            empty_input: (&vec![], 50, 5, false) => vec![] as Vec<usize>,
+            empty_input:
+            (&vec![], 50, 5, false) => vec![] as Vec<usize>,
 
-            no_limiting_needed: (&vec![5, 6, 7], 50, 5, false) => vec![5, 6, 7],
+            no_limiting_needed:
+            (&vec![5, 6, 7], 50, 5, false) => vec![5, 6, 7],
         }
     }
 
@@ -142,7 +147,6 @@ mod tests {
 
             columns_with_spare_space:
             ("123456\tabcd".to_string(), &vec![8, 8], "\t", "|", ' ') => "123456  |abcd    ".to_string(),
-
         }
     }
 }

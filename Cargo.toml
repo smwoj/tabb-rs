@@ -1,8 +1,15 @@
 [package]
 name = "tab"
 version = "0.1.0"
-authors = ["Wojciech Smołka <sm.wojciech@gmail.com>"]
 edition = "2018"
+authors = ["Wojciech Smołka <sm.wojciech@gmail.com>"]
+license = "MIT"
+description = "A tool for pretty printing (padding) tabular data."
+readme = "README.md"
+homepage = "https://github.com/smwoj/tab-rs"
+repository = "https://github.com/smwoj/tab-rs"
+keywords = ["cli", "csv", "tabular", "formatter"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 termion = "*"

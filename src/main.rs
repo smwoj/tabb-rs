@@ -9,7 +9,6 @@ mod formatter;
 fn main() {
     // parse cl args and inspect execution context (are we writing to a tty?)
     let config = config::Config::new();
-    dbg!(&config);
 
     // acquire std{in,out} locks
     let stdin = io::stdin();
@@ -39,15 +38,15 @@ fn main() {
         );
     }
     for l in lines_iter {
-        println!(
-            "{}",
-            formatter::format_line(
-                l,
-                &split_info,
-                config.input_sep,
-                config.output_sep,
-                config.padding,
-            )
+        // println!(
+        //     "{}",
+        formatter::format_line(
+            l,
+            &split_info,
+            config.input_sep,
+            config.output_sep,
+            config.padding,
         );
+        // );
     }
 }

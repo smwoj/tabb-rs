@@ -30,7 +30,6 @@ pub fn split_available_width(
     max_lengths: &[usize],
     available_width: usize,
     output_sep_len: usize,
-    expand: bool,
 ) -> Vec<usize> {
     let n_columns = max_lengths.len();
     let n_separators = if n_columns >= 1 { n_columns - 1 } else { 0 };
@@ -38,7 +37,7 @@ pub fn split_available_width(
 
     let max_len_sum = max_lengths.iter().sum::<usize>() as f64;
 
-    let available_chars_per_column: Vec<usize> = if !expand && width_to_alloc > max_len_sum {
+    let available_chars_per_column: Vec<usize> = if width_to_alloc > max_len_sum {
         max_lengths.into() // no need to limit available space
     } else {
         // split available space proportionally
@@ -119,10 +118,10 @@ mod tests {
         split_available_width;
         {
             empty_input:
-            (&vec![], 50, 5, false) => vec![] as Vec<usize>,
+            (&vec![], 50, 5) => vec![] as Vec<usize>,
 
             no_limiting_needed:
-            (&vec![5, 6, 7], 50, 5, false) => vec![5, 6, 7],
+            (&vec![5, 6, 7], 50, 5) => vec![5, 6, 7],
         }
     }
 
@@ -147,6 +146,11 @@ mod tests {
 
             columns_with_spare_space:
             ("123456\tabcd".to_string(), &vec![8, 8], "\t", "|", ' ') => "123456  |abcd    ".to_string(),
+
+            with_exotic_alphabets:
+            ("อินทรีทอง\tGolden Eagle
+             Szklana pułapka\tDie hard
+             아가씨\tThe handmaiden".to_string(), &vec![8, 8], "\t", "|", ' ') => "123456  |abcd    ".to_string(),
         }
     }
 }

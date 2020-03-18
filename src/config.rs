@@ -2,31 +2,30 @@ use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "tab",
+    name = "tabb",
     about = "
 Formatting and padding utility for tabular data.
 
 This program reprints rows of tabular data based on widths necessary
 for pretting printing of n first lines (default=50). 
 
-
-tab switches between two modes:
- - printer (when there's a terminal serving as stdout device),
- - formatter (otherwise - when output is e.g. piped or redirected to file).
+Terminal width is the default for formatting output.
+It can be overridden via -w, --width option
 "
 )]
 struct Args {
     /// Column separator char [default: \t]
-    #[structopt(short = "s", long = "input-sep")]
+    #[structopt(short = "s", long = "in-sep")]
     input_sep: Option<String>,
 
     /// Padding character [default: space]
     #[structopt(short = "p", long = "padding")]
     padding: Option<char>,
+
     // Defaults for sep & padding applied outside stuctops
     // to avoid confusing printing of '... [default:  ]'
     /// Output separator char
-    #[structopt(long = "output-sep", default_value = " ")]
+    #[structopt(long = "out-sep", default_value = "\t")]
     output_sep: String,
 
     /// Capture n first lines for calculating columns' widths
@@ -53,7 +52,6 @@ pub struct Config {
     pub input_sep: String,
     pub output_sep: String,
     pub padding: char,
-    pub expand: bool,
 }
 
 impl Config {
@@ -76,7 +74,6 @@ impl Config {
             input_sep: args.input_sep.unwrap_or_else(|| '\t'.to_string()),
             output_sep: args.output_sep,
             padding: args.padding.unwrap_or(' '),
-            expand: args.expand,
         }
     }
 }

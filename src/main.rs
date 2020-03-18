@@ -27,7 +27,6 @@ fn main() {
         &col_sizes,
         config.width,
         config.output_sep.chars().count(),
-        config.expand,
     );
 
     for l in first_lines {

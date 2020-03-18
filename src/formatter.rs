@@ -1,13 +1,14 @@
 use std::iter::repeat;
 
 /// Scans n first lines to collect info about longest values in each column.
-pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
+pub fn analyze(lines: &[String], sep: char) -> Vec<usize> {
     let mut columns_to_lengths: Vec<Vec<usize>> = Vec::new();
+    dbg!(sep);
 
     for line in lines {
         let column_value_lenghts = line
             .split(sep)
-            .map(|substr| substr.trim().chars().count())
+            .map(|substr| dbg!(dbg!(substr).trim().chars().count()))
             .collect::<Vec<usize>>();
 
         if columns_to_lengths.len() < column_value_lenghts.len() {
@@ -19,21 +20,19 @@ pub fn analyze(lines: &[String], sep: &str) -> Vec<usize> {
         }
     }
 
-    columns_to_lengths
+    let c = columns_to_lengths
         .into_iter()
         .map(|v| *v.iter().max().unwrap())
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+    dbg!(&c);
+    c
 }
 
 /// Assigns widths to columns.
-pub fn split_available_width(
-    max_lengths: &[usize],
-    available_width: usize,
-    output_sep_len: usize,
-) -> Vec<usize> {
+pub fn split_available_width(max_lengths: &[usize], available_width: usize) -> Vec<usize> {
     let n_columns = max_lengths.len();
     let n_separators = if n_columns >= 1 { n_columns - 1 } else { 0 };
-    let width_to_alloc = (available_width - n_separators * output_sep_len) as f64;
+    let width_to_alloc = (available_width - n_separators) as f64;
 
     let max_len_sum = max_lengths.iter().sum::<usize>() as f64;
 
@@ -56,8 +55,8 @@ pub fn split_available_width(
 pub fn format_line(
     input_line: String,
     split_info: &[usize],
-    input_sep: &str,
-    output_sep: &str,
+    input_sep: char,
+    output_sep: char,
     fill_value: char,
 ) -> String {
     input_line
@@ -81,7 +80,7 @@ pub fn format_line(
             }
         })
         .collect::<Vec<String>>()
-        .join(output_sep)
+        .join(&output_sep.to_string())
 }
 
 #[cfg(test)]
@@ -150,7 +149,10 @@ mod tests {
             with_exotic_alphabets:
             ("อินทรีทอง\tGolden Eagle
              Szklana pułapka\tDie hard
-             아가씨\tThe handmaiden".to_string(), &vec![8, 8], "\t", "|", ' ') => "123456  |abcd    ".to_string(),
+             아가씨\tThe handmaiden\
+             取締 取締 取締\tno idea what these glyphs mean\
+             食卓  休紙 片紙 \tthese neither".to_string(), &vec![8, 8], "\t", "|", ' ')
+             => "123456  |abcd    ".to_string(),
         }
     }
 }
